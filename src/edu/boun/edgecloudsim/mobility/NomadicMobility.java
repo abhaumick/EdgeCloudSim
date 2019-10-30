@@ -120,4 +120,9 @@ public class NomadicMobility extends MobilityModel {
 		return e.getValue();
 	}
 
+	@Override
+	public void updateMobileDeviceLocation() {
+		return;
+	}
+
 }

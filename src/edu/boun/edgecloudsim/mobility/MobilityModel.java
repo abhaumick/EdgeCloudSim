@@ -33,4 +33,6 @@ public abstract class MobilityModel {
 	 * returns location of a device at a certain time
 	 */
 	public abstract Location getLocation(int deviceId, double time);
+
+	public abstract void updateMobileDeviceLocation();
 }

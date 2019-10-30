@@ -46,6 +46,7 @@ import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.utils.TaskProperty;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
+import edu.boun.edgecloudsim.mobility.MetricMobility;
 
 public class SampleMobileDeviceManager extends MobileDeviceManager {
 	private static final int BASE = 100000; //start from base in order not to conflict cloudsim tag!
@@ -269,6 +270,8 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 				else
 					networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
 				
+				SimManager.getInstance().getMobilityModel().updateMobileDeviceLocation();
+
 				SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
 				break;
 			}
