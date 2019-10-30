@@ -220,4 +220,9 @@ public class MM1Queue extends NetworkModel {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public int[] getWlanClients() {
+		return new int[0];
+	}
 }

@@ -13,6 +13,7 @@
 
 package edu.boun.edgecloudsim.mobility;
 
+import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.utils.Location;
 
 public abstract class MobilityModel {
@@ -34,5 +35,5 @@ public abstract class MobilityModel {
 	 */
 	public abstract Location getLocation(int deviceId, double time);
 
-	public abstract void updateMobileDeviceLocation();
+	public abstract double updateMobileDeviceLocation( int mobileDeviceId, double time );
 }

@@ -83,7 +83,7 @@ public class SampleMobilityModel extends MobilityModel {
 				boolean placeFound = false;
 				int currentLocationId = treeMap.lastEntry().getValue().getServingWlanId();
 				double waitingTime = expRngList[currentLocationId].sample();
-				
+
 				while(placeFound == false){
 					int[] wlanClients = SimManager.getInstance().getNetworkModel().getWlanClients();
 					int minLoadClient=Integer.MAX_VALUE;
@@ -103,9 +103,9 @@ public class SampleMobilityModel extends MobilityModel {
 					int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
 					int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
 					int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
-						
+
 					treeMap.put(treeMap.lastKey()+waitingTime, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
-					
+
 				}
 				/*if(!placeFound){
 					SimLogger.printLine("impossible is occured! location cannot be assigned to the device!");
@@ -113,7 +113,7 @@ public class SampleMobilityModel extends MobilityModel {
 				}*/
 			}
 		}
-		
+
 
 	}
 
@@ -132,8 +132,9 @@ public class SampleMobilityModel extends MobilityModel {
 	}
 
 	@Override
-	public void updateMobileDeviceLocation() {
-		return;
+	public double updateMobileDeviceLocation(int mobileDeviceId, double time) {
+		return 0;
 	}
+
 
 }

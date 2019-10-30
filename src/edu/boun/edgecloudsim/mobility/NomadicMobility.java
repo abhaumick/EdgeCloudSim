@@ -121,8 +121,8 @@ public class NomadicMobility extends MobilityModel {
 	}
 
 	@Override
-	public void updateMobileDeviceLocation() {
-		return;
+	public double updateMobileDeviceLocation( int mobileDeviceId, double time ) {
+		return 0;
 	}
 
 }

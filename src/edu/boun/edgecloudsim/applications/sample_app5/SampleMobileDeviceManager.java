@@ -268,8 +268,9 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 					networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.CLOUD_DATACENTER_ID);
 				else
 					networkModel.downloadFinished(task.getSubmittedLocation(), SimSettings.GENERIC_EDGE_DEVICE_ID);
-				
-				SimManager.getInstance().getMobilityModel().updateMobileDeviceLocation();
+
+				//	Call updateMobility on task finished
+				SimManager.getInstance().getMobilityModel().updateMobileDeviceLocation( task.getMobileDeviceId(), CloudSim.clock() );
 
 				SimLogger.getInstance().taskEnded(task.getCloudletId(), CloudSim.clock());
 				break;
