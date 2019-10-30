@@ -422,4 +422,10 @@ public class FuzzyExperimentalNetworkModel extends NetworkModel {
 		totalManTaskInputSize = 0;
 		numOfManTaskForUpload = 0;
 	}
+
+	@Override
+	public int[] getWlanClients() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

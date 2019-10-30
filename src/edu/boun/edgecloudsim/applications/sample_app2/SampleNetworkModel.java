@@ -429,4 +429,9 @@ public class SampleNetworkModel extends NetworkModel {
 		totalManTaskInputSize = 0;
 		numOfManTaskForUpload = 0;
 	}
+	
+	@Override
+	public int[] getWlanClients() {
+		return wlanClients;
+	}
 }

@@ -22,7 +22,7 @@ import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
-public class MetricMobility extends NomadicMobility {
+public class SampleMobilityModel extends Network {
 
 	public MetricMobility( int _numberOfMobileDevices, double _simulationTime ) {
 		super( _numberOfMobileDevices, _simulationTime );

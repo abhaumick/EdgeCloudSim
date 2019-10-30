@@ -240,4 +240,10 @@ public class SampleNetworkModel extends NetworkModel {
 	private double getWlanUploadDelay(Location accessPointLocation, double dataSize) {
 		return getWlanDownloadDelay(accessPointLocation, dataSize);
 	}
+
+	@Override
+	public int[] getWlanClients() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

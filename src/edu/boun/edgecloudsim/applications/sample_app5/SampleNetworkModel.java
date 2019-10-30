@@ -187,6 +187,7 @@ public class SampleNetworkModel extends NetworkModel {
 
 	@Override
 	public void initialize() {
+		System.out.println("Sample NETWORK ModelInitialized----");
 		wanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
 		wlanClients = new int[SimSettings.getInstance().getNumOfEdgeDatacenters()];  //we have one access point for each datacenter
 
@@ -428,5 +429,10 @@ public class SampleNetworkModel extends NetworkModel {
 		numOfManTaskForDownload = 0;
 		totalManTaskInputSize = 0;
 		numOfManTaskForUpload = 0;
+	}
+
+	@Override
+	public int[] getWlanClients() {
+		return wlanClients;
 	}
 }
