@@ -36,4 +36,6 @@ public abstract class MobilityModel {
 	public abstract Location getLocation(int deviceId, double time);
 
 	public abstract double updateMobileDeviceLocation( int mobileDeviceId, double time );
+
+	public abstract double getWaitTime( int mobileDeviceId, double time );
 }

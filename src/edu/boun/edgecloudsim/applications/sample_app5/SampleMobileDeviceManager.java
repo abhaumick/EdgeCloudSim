@@ -58,6 +58,9 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 	private static final int RESPONSE_RECEIVED_BY_MOBILE_DEVICE = BASE + 6;
 	private static final int RESPONSE_RECEIVED_BY_EDGE_DEVICE_TO_RELAY_MOBILE_DEVICE = BASE + 7;
 
+	// Additional Event class for updateMobility call
+	private static final int UPDATE_MOBILTY = BASE + 1000;
+
 	private static final double MM1_QUEUE_MODEL_UPDATE_INTEVAL = 5; //seconds
 	
 	private int taskIdCounter=0;
@@ -79,6 +82,14 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 		super.startEntity();
 		schedule(getId(), SimSettings.CLIENT_ACTIVITY_START_TIME +
 				MM1_QUEUE_MODEL_UPDATE_INTEVAL, UPDATE_MM1_QUEUE_MODEL);
+		// Queue UpdateMobility calls for each mobileDevice
+		for(int i=0; i<2; i++) {	// SimManager.getInstance().getNumOfMobileDevice()
+			double delayTime = SimManager.getInstance().getMobilityModel().getWaitTime(i, SimSettings.CLIENT_ACTIVITY_START_TIME );
+			schedule(getId(), SimSettings.CLIENT_ACTIVITY_START_TIME + delayTime,
+				UPDATE_MOBILTY, i );
+			System.out.println( String.format( "Scheduled : %d Relocation @ %f", i, 
+				SimSettings.CLIENT_ACTIVITY_START_TIME + delayTime ) );
+		}
 	}
 	
 	/**
@@ -184,6 +195,20 @@ public class SampleMobileDeviceManager extends MobileDeviceManager {
 				((SampleNetworkModel)networkModel).updateMM1QueeuModel();
 				schedule(getId(), MM1_QUEUE_MODEL_UPDATE_INTEVAL, UPDATE_MM1_QUEUE_MODEL);
 	
+				break;
+			}
+			case UPDATE_MOBILTY:
+			{
+				int mobileDeviceId = (int)ev.getData();
+				double delay = SimManager.getInstance().getMobilityModel().updateMobileDeviceLocation( mobileDeviceId, CloudSim.clock() );
+				double clock = CloudSim.clock();
+
+				System.out.println( String.format( "Got relocation event : %d @ %f", mobileDeviceId, clock ) );
+				if( clock + delay < SimSettings.getInstance().getSimulationTime() )
+				{
+					System.out.println( String.format( "Rescheduled %d @ %f", mobileDeviceId, clock + delay ) );
+					schedule( getId(), delay, UPDATE_MOBILTY, mobileDeviceId );
+				}
 				break;
 			}
 			case REQUEST_RECEIVED_BY_CLOUD:

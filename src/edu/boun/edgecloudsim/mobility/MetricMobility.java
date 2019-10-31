@@ -127,4 +127,15 @@ public class MetricMobility extends MobilityModel {
 		return waitingTime;
 	}
 
+	public double getWaitTime( int mobileDeviceId, double time ) {
+
+		TreeMap<Double, Location> treeMap = treeMapArray.get(mobileDeviceId);
+		
+		Location currentLocation = getLocation(mobileDeviceId, time);
+		double waitingTime = expRngList[currentLocation.getServingWlanId()].sample();
+
+		return waitingTime;
+		
+	}
+
 }

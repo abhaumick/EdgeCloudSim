@@ -21,6 +21,7 @@ import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.DefaultMobileSer
 import edu.boun.edgecloudsim.edge_client.mobile_processing_unit.MobileServerManager;
 import edu.boun.edgecloudsim.mobility.MobilityModel;
 import edu.boun.edgecloudsim.mobility.NomadicMobility;
+import edu.boun.edgecloudsim.mobility.MetricMobility;
 import edu.boun.edgecloudsim.task_generator.IdleActiveLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
 import edu.boun.edgecloudsim.network.NetworkModel;
@@ -53,7 +54,7 @@ public class SampleScenarioFactory implements ScenarioFactory {
 
 	@Override
 	public MobilityModel getMobilityModel() {
-		return new SampleMobilityModel(numOfMobileDevice,simulationTime);
+		return new MetricMobility(numOfMobileDevice,simulationTime);
 	}
 
 	@Override

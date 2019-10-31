@@ -125,4 +125,9 @@ public class NomadicMobility extends MobilityModel {
 		return 0;
 	}
 
+	@Override
+	public double getWaitTime( int mobileDeviceId, double time ) {
+		return 0;
+	}
+
 }
