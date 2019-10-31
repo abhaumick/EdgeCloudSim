@@ -32,6 +32,8 @@ import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class SampleMobilityModel extends MobilityModel {
 	private List<TreeMap<Double, Location>> treeMapArray;
+	private ExponentialDistribution[] expRngList;
+	private NodeList datacenterList;
 	
 	public SampleMobilityModel(int _numberOfMobileDevices, double _simulationTime) {
 		super(_numberOfMobileDevices, _simulationTime);
@@ -43,11 +45,11 @@ public class SampleMobilityModel extends MobilityModel {
 		System.out.println("SampleMobilityModelInitiLIZED----");
 		treeMapArray = new ArrayList<TreeMap<Double, Location>>();
 		
-		ExponentialDistribution[] expRngList = new ExponentialDistribution[SimSettings.getInstance().getNumOfEdgeDatacenters()];
+		expRngList = new ExponentialDistribution[SimSettings.getInstance().getNumOfEdgeDatacenters()];
 
 		//create random number generator for each place
 		Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
-		NodeList datacenterList = doc.getElementsByTagName("datacenter");
+		datacenterList = doc.getElementsByTagName("datacenter");
 		for (int i = 0; i < datacenterList.getLength(); i++) {
 			Node datacenterNode = datacenterList.item(i);
 			Element datacenterElement = (Element) datacenterNode;
@@ -76,44 +78,6 @@ public class SampleMobilityModel extends MobilityModel {
 			treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
 		}
 		
-		for(int i=0; i<numberOfMobileDevices; i++) {
-			TreeMap<Double, Location> treeMap = treeMapArray.get(i);
-
-			while(treeMap.lastKey() < SimSettings.getInstance().getSimulationTime()) {				
-				boolean placeFound = false;
-				int currentLocationId = treeMap.lastEntry().getValue().getServingWlanId();
-				double waitingTime = expRngList[currentLocationId].sample();
-
-				while(placeFound == false){
-					int[] wlanClients = SimManager.getInstance().getNetworkModel().getWlanClients();
-					int minLoadClient=Integer.MAX_VALUE;
-					System.out.println("Values -------------------------------------- "+wlanClients.length);
-					for(int client=0; client<wlanClients.length; client++) {
-						if(wlanClients[client]<minLoadClient && wlanClients[client]!=currentLocationId) {
-							minLoadClient=wlanClients[client];
-						}
-					}
-					int newDatacenterId = minLoadClient;
-					placeFound = true;
-					Node datacenterNode = datacenterList.item(newDatacenterId);
-					Element datacenterElement = (Element) datacenterNode;
-					Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
-					String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
-					int placeTypeIndex = Integer.parseInt(attractiveness);
-					int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
-					int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
-					int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
-
-					treeMap.put(treeMap.lastKey()+waitingTime, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
-
-				}
-				/*if(!placeFound){
-					SimLogger.printLine("impossible is occured! location cannot be assigned to the device!");
-			    	System.exit(0);
-				}*/
-			}
-		}
-
 
 	}
 
@@ -133,8 +97,48 @@ public class SampleMobilityModel extends MobilityModel {
 
 	@Override
 	public double updateMobileDeviceLocation(int mobileDeviceId, double time) {
-		return 0;
+			double waitingTime =0;
+			//System.out.println( String.format( "MetricMobility : Update for mobile # %d @ time %f", mobileDeviceId, time ) );
+			Location currentLocation = getLocation(mobileDeviceId, time);
+			//System.out.print( String.format( "\t\t From : %d - %d - %d - %d ", currentLocation.getServingWlanId(),
+			//	currentLocation.getPlaceTypeIndex(), currentLocation.getXPos(), currentLocation.getYPos() ) );
+			//	Select new edge datacenter node - by metric
+			int[] wlanClients = SimManager.getInstance().getNetworkModel().getWlanClients();
+			int nextBestDatacenter=Integer.MAX_VALUE;
+			for(int client=0; client<wlanClients.length; client++) {
+				if(wlanClients[client]<nextBestDatacenter && client!=currentLocation.getServingWlanId()) {
+					nextBestDatacenter=client;
+				}
+			}
+			//	Max = SimSettings.getInstance().getNumOfEdgeDatacenters()-1
+			int newDatacenterId = nextBestDatacenter;
+
+			//	Update treeMap
+			Node datacenterNode = datacenterList.item(newDatacenterId);
+			Element datacenterElement = (Element) datacenterNode;
+			Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
+			String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
+			int placeTypeIndex = Integer.parseInt(attractiveness);
+			int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
+			int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
+			int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
+			
+			TreeMap<Double, Location> treeMap = treeMapArray.get(mobileDeviceId);
+			treeMap.put(time, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
+			
+			//	Calculate time at next edge node
+			Location finalLocation = getLocation(mobileDeviceId, time);
+
+			//System.out.print( String.format( "\t To : %d - %d - %d - %d ", finalLocation.getServingWlanId(),
+			//	finalLocation.getPlaceTypeIndex(), finalLocation.getXPos(), finalLocation.getYPos() ) );
+			
+			waitingTime = expRngList[finalLocation.getServingWlanId()].sample();
+			//System.out.println( String.format( " For %f", waitingTime ) );
+					
+			return waitingTime;
+
 	}
+
 
 	@Override
 	public double getWaitTime(int mobileDeviceId, double time) {
