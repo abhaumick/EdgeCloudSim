@@ -12,6 +12,8 @@
 
 package edu.boun.edgecloudsim.mobility;
 
+import java.lang.Math;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -28,78 +30,152 @@ import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
 import edu.boun.edgecloudsim.utils.SimUtils;
 
-public class NomadicMobility extends MobilityModel {
+public class Nomadic2DMobility extends MobilityModel {
 	private List<TreeMap<Double, Location>> treeMapArray;
-	
-	public NomadicMobility(int _numberOfMobileDevices, double _simulationTime) {
+	private List<TreeMap<Double, Location>> mobileTreeMapArray;
+
+	private int maxX = 2000;
+	private int maxY = 2000;
+
+	public Nomadic2DMobility(int _numberOfMobileDevices, double _simulationTime) {
 		super(_numberOfMobileDevices, _simulationTime);
 		// TODO Auto-generated constructor stub
 	}
-	
+
+	private NodeList datacenterList;
+
+
+	private int getClosestDatacenter( int mobileX, int mobileY ) {
+
+		// Trace closest edge datacenter
+		int closestDatacenterIndex = 0;
+		int distToClosestDatacenter = 0; // Will be initialized in case of first comparison
+		int numberOfDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
+		
+		for (int j = 1; j < numberOfDatacenters; j++) {
+			Node datacenterNode = datacenterList.item(j);
+			Element datacenterElement = (Element) datacenterNode;
+			Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
+			int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
+			int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
+
+			// Find pythagorean distance from datacenter
+			int distToDatacenter = (int) Math.sqrt(Math.pow((mobileX - x_pos), 2) + Math.pow((mobileY - y_pos), 2));
+
+			if (j == 0) {
+				closestDatacenterIndex = 0;
+				distToClosestDatacenter = distToDatacenter;
+			} else if (distToDatacenter < distToClosestDatacenter) {
+				closestDatacenterIndex = j;
+				distToClosestDatacenter = distToDatacenter;
+			}
+		}
+
+		return closestDatacenterIndex;
+	}
+
 	@Override
 	public void initialize() {
 		treeMapArray = new ArrayList<TreeMap<Double, Location>>();
-		
-		ExponentialDistribution[] expRngList = new ExponentialDistribution[SimSettings.getInstance().getNumOfEdgeDatacenters()];
 
-		//create random number generator for each place
+		ExponentialDistribution[] expRngList = new ExponentialDistribution[SimSettings.getInstance()
+				.getNumOfEdgeDatacenters()];
+
+		// create random number generator for each edge
 		Document doc = SimSettings.getInstance().getEdgeDevicesDocument();
-		NodeList datacenterList = doc.getElementsByTagName("datacenter");
+		datacenterList = doc.getElementsByTagName("datacenter");
 		for (int i = 0; i < datacenterList.getLength(); i++) {
 			Node datacenterNode = datacenterList.item(i);
 			Element datacenterElement = (Element) datacenterNode;
-			Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
+			Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
 			String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
 			int placeTypeIndex = Integer.parseInt(attractiveness);
-			
-			expRngList[i] = new ExponentialDistribution(SimSettings.getInstance().getMobilityLookUpTable()[placeTypeIndex]);
+
+			expRngList[i] = new ExponentialDistribution(
+					SimSettings.getInstance().getMobilityLookUpTable()[placeTypeIndex]);
 		}
-		
-		//initialize tree maps and position of mobile devices
-		for(int i=0; i<numberOfMobileDevices; i++) {
+
+		// initialize tree maps and position of mobile devices
+		for (int i = 0; i < numberOfMobileDevices; i++) {
 			treeMapArray.add(i, new TreeMap<Double, Location>());
-			
-			int randDatacenterId = SimUtils.getRandomNumber(0, SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
-			Node datacenterNode = datacenterList.item(randDatacenterId);
+			mobileTreeMapArray.add(i, new TreeMap<Double, Location>());
+
+			// Generate random x,y coord for location of mobile node
+			int randX = SimUtils.getRandomNumber(0, maxX - 1);
+			int randY = SimUtils.getRandomNumber(0, maxY - 1);
+
+			// Trace closest edge datacenter
+			int closestDatacenterIndex = getClosestDatacenter(randX, randY);
+
+			// Insert initial position of mobile devices
+			Node datacenterNode = datacenterList.item(closestDatacenterIndex);
 			Element datacenterElement = (Element) datacenterNode;
-			Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
+			Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
 			String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
 			int placeTypeIndex = Integer.parseInt(attractiveness);
 			int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
 			int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
 			int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
 
-			//start locating user shortly after the simulation started (e.g. 10 seconds)
-			treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
+			// start locating user shortly after the simulation started (e.g. 10 seconds)
+			treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME,
+					new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
+			mobileTreeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME,
+					new Location(placeTypeIndex, wlan_id, randX, randY));
 		}
-		
-		for(int i=0; i<numberOfMobileDevices; i++) {
+
+		for (int i = 0; i < numberOfMobileDevices; i++) {
 			TreeMap<Double, Location> treeMap = treeMapArray.get(i);
 
-			while(treeMap.lastKey() < SimSettings.getInstance().getSimulationTime()) {				
+			while (treeMap.lastKey() < SimSettings.getInstance().getSimulationTime()) {
 				boolean placeFound = false;
 				int currentLocationId = treeMap.lastEntry().getValue().getServingWlanId();
 				double waitingTime = expRngList[currentLocationId].sample();
-				
-				while(placeFound == false){
-					int newDatacenterId = SimUtils.getRandomNumber(0,SimSettings.getInstance().getNumOfEdgeDatacenters()-1);
-					if(newDatacenterId != currentLocationId){
+
+				int randX = SimUtils.getRandomNumber(0, maxX - 1);
+				int randY = SimUtils.getRandomNumber(0, maxY - 1);
+
+				int closestDatacenterIndex = getClosestDatacenter(randX, randY);
+
+				Node datacenterNode = datacenterList.item(closestDatacenterIndex);
+				Element datacenterElement = (Element) datacenterNode;
+				Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
+				String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
+				int placeTypeIndex = Integer.parseInt(attractiveness);
+				int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
+				int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
+				int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
+
+				treeMap.put(treeMap.lastKey() + waitingTime, 
+					new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
+				mobileTreeMapArray.get(i).put(treeMap.lastKey() + waitingTime, 
+					new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
+
+				/*
+				while (placeFound == false) {
+					int newDatacenterId = SimUtils.getRandomNumber(0,
+							SimSettings.getInstance().getNumOfEdgeDatacenters() - 1);
+					if (newDatacenterId != currentLocationId) {
 						placeFound = true;
 						Node datacenterNode = datacenterList.item(newDatacenterId);
 						Element datacenterElement = (Element) datacenterNode;
-						Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
-						String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
+						Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
+						String attractiveness = location.getElementsByTagName("attractiveness").item(0)
+								.getTextContent();
 						int placeTypeIndex = Integer.parseInt(attractiveness);
-						int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
+						int wlan_id = Integer
+								.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
 						int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
 						int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
-						
-						treeMap.put(treeMap.lastKey()+waitingTime, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
+
+						treeMap.put(treeMap.lastKey() + waitingTime,
+								new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
 					}
 				}
-				if(!placeFound){
+				*/
+				if (!placeFound) {
 					SimLogger.printLine("impossible is occured! location cannot be assigned to the device!");
-			    	System.exit(0);
+					System.exit(0);
 				}
 			}
 		}
@@ -109,24 +185,25 @@ public class NomadicMobility extends MobilityModel {
 	@Override
 	public Location getLocation(int deviceId, double time) {
 		TreeMap<Double, Location> treeMap = treeMapArray.get(deviceId);
-		
+
 		Entry<Double, Location> e = treeMap.floorEntry(time);
-	    
-	    if(e == null){
-	    	SimLogger.printLine("impossible is occured! no location is found for the device '" + deviceId + "' at " + time);
-	    	System.exit(0);
-	    }
-	    
+
+		if (e == null) {
+			SimLogger.printLine(
+					"impossible is occured! no location is found for the device '" + deviceId + "' at " + time);
+			System.exit(0);
+		}
+
 		return e.getValue();
 	}
 
 	@Override
-	public double updateMobileDeviceLocation( int mobileDeviceId, double time ) {
+	public double updateMobileDeviceLocation(int mobileDeviceId, double time) {
 		return 0;
 	}
 
 	@Override
-	public double getWaitTime( int mobileDeviceId, double time ) {
+	public double getWaitTime(int mobileDeviceId, double time) {
 		return 0;
 	}
 
