@@ -7,7 +7,7 @@
  * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
  */
 
-package edu.boun.edgecloudsim.applications.sample_app2;
+package edu.boun.edgecloudsim.applications.sample_app5;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
