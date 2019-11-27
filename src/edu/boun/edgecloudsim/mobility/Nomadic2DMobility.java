@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.w3c.dom.Document;
@@ -34,8 +35,8 @@ public class Nomadic2DMobility extends MobilityModel {
 	private List<TreeMap<Double, Location>> treeMapArray;
 	private List<TreeMap<Double, Location>> mobileTreeMapArray;
 
-	private int maxX = 2000;
-	private int maxY = 2000;
+	private int maxX = 50;
+	private int maxY = 50;
 
 	public Nomadic2DMobility(int _numberOfMobileDevices, double _simulationTime) {
 		super(_numberOfMobileDevices, _simulationTime);
@@ -48,10 +49,10 @@ public class Nomadic2DMobility extends MobilityModel {
 
 		// Trace closest edge datacenter
 		int closestDatacenterIndex = 0;
-		int distToClosestDatacenter = 0; // Will be initialized in case of first comparison
+		int distToClosestDatacenter = Integer.MAX_VALUE; // Will be initialized in case of first comparison
 		int numberOfDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
 
-		for (int j = 1; j < numberOfDatacenters; j++) {
+		for (int j = 0; j < numberOfDatacenters; j++) {
 			Node datacenterNode = datacenterList.item(j);
 			Element datacenterElement = (Element) datacenterNode;
 			Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
@@ -61,10 +62,7 @@ public class Nomadic2DMobility extends MobilityModel {
 			// Find pythagorean distance from datacenter
 			int distToDatacenter = (int) Math.sqrt(Math.pow((mobileX - x_pos), 2) + Math.pow((mobileY - y_pos), 2));
 
-			if (j == 0) {
-				closestDatacenterIndex = 0;
-				distToClosestDatacenter = distToDatacenter;
-			} else if (distToDatacenter < distToClosestDatacenter) {
+			if (distToDatacenter < distToClosestDatacenter) {
 				closestDatacenterIndex = j;
 				distToClosestDatacenter = distToDatacenter;
 			}
@@ -77,6 +75,7 @@ public class Nomadic2DMobility extends MobilityModel {
 	public void initialize() {
 		treeMapArray = new ArrayList<TreeMap<Double, Location>>();
 		mobileTreeMapArray = new ArrayList<TreeMap<Double, Location>>();
+		Random rand = new Random();
 		ExponentialDistribution[] expRngList = new ExponentialDistribution[SimSettings.getInstance()
 				.getNumOfEdgeDatacenters()];
 
@@ -100,8 +99,8 @@ public class Nomadic2DMobility extends MobilityModel {
 			mobileTreeMapArray.add(i, new TreeMap<Double, Location>());
 
 			// Generate random x,y coord for location of mobile node
-			int randX = SimUtils.getRandomNumber(0, maxX - 1);
-			int randY = SimUtils.getRandomNumber(0, maxY - 1);
+			int randX = rand.nextInt(maxX);
+			int randY = rand.nextInt(maxY);
 
 			// Trace closest edge datacenter
 			int closestDatacenterIndex = getClosestDatacenter(randX, randY);
@@ -115,7 +114,7 @@ public class Nomadic2DMobility extends MobilityModel {
 			int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
 			int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
 			int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
-
+			//System.out.println("this one: "+x_pos+"     "+y_pos+"     " + wlan_id);
 			// start locating user shortly after the simulation started (e.g. 10 seconds)
 			treeMapArray.get(i).put(SimSettings.CLIENT_ACTIVITY_START_TIME,
 					new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
@@ -131,8 +130,11 @@ public class Nomadic2DMobility extends MobilityModel {
 				int currentLocationId = treeMap.lastEntry().getValue().getServingWlanId();
 				double waitingTime = expRngList[currentLocationId].sample();
 
-				int randX = SimUtils.getRandomNumber(0, maxX - 1);
-				int randY = SimUtils.getRandomNumber(0, maxY - 1);
+				/*int randX = SimUtils.getRandomNumber(0, maxX - 1);
+				int randY = SimUtils.getRandomNumber(0, maxY - 1);*/
+				
+				int randX = rand.nextInt(maxX);
+				int randY = rand.nextInt(maxY);
 
 				int closestDatacenterIndex = getClosestDatacenter(randX, randY);
 
