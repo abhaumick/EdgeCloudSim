@@ -44,7 +44,7 @@ public class MobilityCrawdad extends MobilityModel {
     private NodeList datacenterList;
     private NodeList mobiledevicesList;
 
-	private int getClosestDatacenter(int mobileX, int mobileY) {
+	private int getClosestDatacenter(Double x_pos2, Double y_pos2) {
 
 		// Trace closest edge datacenter
 		int closestDatacenterIndex = 0;
@@ -59,7 +59,7 @@ public class MobilityCrawdad extends MobilityModel {
 			int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
 
 			// Find pythagorean distance from datacenter
-			int distToDatacenter = (int) Math.sqrt(Math.pow((mobileX - x_pos), 2) + Math.pow((mobileY - y_pos), 2));
+			int distToDatacenter = (int) Math.sqrt(Math.pow((x_pos2 - x_pos), 2) + Math.pow((y_pos2 - y_pos), 2));
 
 			if (distToDatacenter < distToClosestDatacenter) {
 				closestDatacenterIndex = j;
@@ -91,7 +91,7 @@ public class MobilityCrawdad extends MobilityModel {
 
         // initialize tree maps and position of mobile devices
         Document clientdoc = SimSettings.getInstance().getMobileDevicesDocument();
-		mobiledevicesList = doc.getElementsByTagName("Client");
+		mobiledevicesList = clientdoc.getElementsByTagName("Client");
 		for (int i = 0; i < numberOfMobileDevices; i++) {
 			treeMapArray.add(i, new TreeMap<Double, Location>());
 
@@ -103,24 +103,24 @@ public class MobilityCrawdad extends MobilityModel {
                 Node Timenode = Timelist.item(l);
                 Element Time = (Element) Timenode;
                 double time = Double.parseDouble(Time.getElementsByTagName("time").item(0).getTextContent());
-                Element Location = (Element) Time.getElementsByTagName("Location").item(0);
-                int X_pos = Integer.parseInt(Location.getElementsByTagName("x_pos").item(0).getTextContent());
-                int Y_pos = Integer.parseInt(Location.getElementsByTagName("y_pos").item(0).getTextContent());
+                Element location = (Element) Time.getElementsByTagName("Location").item(0);
+                Double X_pos = Double.parseDouble(location.getElementsByTagName("X_Pos").item(0).getTextContent());
+                Double Y_pos = Double.parseDouble(location.getElementsByTagName("Y_Pos").item(0).getTextContent());
                 
 
                 int closestDatacenterIndex = getClosestDatacenter(X_pos, Y_pos);
 
 				Node datacenterNode = datacenterList.item(closestDatacenterIndex);
 				Element datacenterElement = (Element) datacenterNode;
-				Element location = (Element) datacenterElement.getElementsByTagName("location").item(0);
-				String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
-				int placeTypeIndex = Integer.parseInt(attractiveness);
-				int wlan_id = Integer.parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
-				int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).getTextContent());
-				int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
+				Element location_d = (Element) datacenterElement.getElementsByTagName("location").item(0);
+				//String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
+				//int placeTypeIndex = Integer.parseInt(attractiveness);
+				int wlan_id = Integer.parseInt(location_d.getElementsByTagName("wlan_id").item(0).getTextContent());
+				int x_pos = Integer.parseInt(location_d.getElementsByTagName("x_pos").item(0).getTextContent());
+				int y_pos = Integer.parseInt(location_d.getElementsByTagName("y_pos").item(0).getTextContent());
                 
                 TreeMap<Double, Location> treeMap = treeMapArray.get(i);
-				treeMap.put(time, new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
+				treeMap.put(time, new Location(0, wlan_id, x_pos, y_pos));
             }
 		}
 	}
