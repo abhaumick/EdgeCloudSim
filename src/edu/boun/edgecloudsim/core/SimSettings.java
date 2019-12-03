@@ -32,7 +32,8 @@ import edu.boun.edgecloudsim.utils.SimLogger;
 public class SimSettings {
 	private static SimSettings instance = null;
 	private Document edgeDevicesDoc = null;
-	
+	private Document mobileDevicesDoc = null;
+
 	public static final double CLIENT_ACTIVITY_START_TIME = 10;
 	
 	//enumarations for the VM types
@@ -64,7 +65,8 @@ public class SimSettings {
     private int NUM_OF_EDGE_DATACENTERS;
     private int NUM_OF_EDGE_HOSTS;
     private int NUM_OF_EDGE_VMS;
-    private int NUM_OF_PLACE_TYPES;
+	private int NUM_OF_PLACE_TYPES;
+	private int NUM_OF_CLIENTS;
     
     private double WAN_PROPOGATION_DELAY; //seconds unit in properties file
     private double LAN_INTERNAL_DELAY; //seconds unit in properties file
@@ -124,14 +126,14 @@ public class SimSettings {
 	 * @param propertiesFile
 	 * @return
 	 */
-	public boolean initialize(String propertiesFile, String edgeDevicesFile, String applicationsFile){
+	public boolean initialize(final String propertiesFile, final String edgeDevicesFile, final String applicationsFile, final String mobileDevicesFile){
 		boolean result = false;
 		InputStream input = null;
 		try {
 			input = new FileInputStream(propertiesFile);
 
 			// load a properties file
-			Properties prop = new Properties();
+			final Properties prop = new Properties();
 			prop.load(input);
 
 			SIMULATION_TIME = (double)60 * Double.parseDouble(prop.getProperty("simulation_time")); //seconds
@@ -168,9 +170,9 @@ public class SimSettings {
 			SIMULATION_SCENARIOS = prop.getProperty("simulation_scenarios").split(",");
 			
 			//avg waiting time in a place (min)
-			double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
-			double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
-			double place3_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L3_mean_waiting_time"));
+			final double place1_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L1_mean_waiting_time"));
+			final double place2_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L2_mean_waiting_time"));
+			final double place3_mean_waiting_time = Double.parseDouble(prop.getProperty("attractiveness_L3_mean_waiting_time"));
 			
 			//mean waiting time (minute)
 			mobilityLookUpTable = new double[]{
@@ -180,21 +182,21 @@ public class SimSettings {
 		    };
 			
 
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			ex.printStackTrace();
 		} finally {
 			if (input != null) {
 				try {
 					input.close();
 					result = true;
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 		parseApplicatinosXML(applicationsFile);
 		parseEdgeDevicesXML(edgeDevicesFile);
-		
+		parseMobileDevicesXML(mobileDevicesFile);
 		return result;
 	}
 	
@@ -205,6 +207,12 @@ public class SimSettings {
 		return edgeDevicesDoc;
 	}
 
+	/**
+	 * returns the parsed XML document for mobile_devices.xml
+	 */
+	public Document getMobileDevicesDocument(){
+		return mobileDevicesDoc;
+	}
 
 	/**
 	 * returns simulation time (in seconds unit) from properties file
@@ -486,46 +494,46 @@ public class SimSettings {
 		return taskLookUpTable;
 	}
 	
-	public String getTaskName(int taskType)
+	public String getTaskName(final int taskType)
 	{
 		return taskNames[taskType];
 	}
 	
-	private void isAttribtuePresent(Element element, String key) {
-        String value = element.getAttribute(key);
+	private void isAttribtuePresent(final Element element, final String key) {
+        final String value = element.getAttribute(key);
         if (value.isEmpty() || value == null){
         	throw new IllegalArgumentException("Attribure '" + key + "' is not found in '" + element.getNodeName() +"'");
         }
 	}
 
-	private void isElementPresent(Element element, String key) {
+	private void isElementPresent(final Element element, final String key) {
 		try {
-			String value = element.getElementsByTagName(key).item(0).getTextContent();
+			final String value = element.getElementsByTagName(key).item(0).getTextContent();
 	        if (value.isEmpty() || value == null){
 	        	throw new IllegalArgumentException("Element '" + key + "' is not found in '" + element.getNodeName() +"'");
 	        }
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new IllegalArgumentException("Element '" + key + "' is not found in '" + element.getNodeName() +"'");
 		}
 	}
 	
-	private void parseApplicatinosXML(String filePath)
+	private void parseApplicatinosXML(final String filePath)
 	{
 		Document doc = null;
 		try {	
-			File devicesFile = new File(filePath);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			final File devicesFile = new File(filePath);
+			final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			doc = dBuilder.parse(devicesFile);
 			doc.getDocumentElement().normalize();
 
-			NodeList appList = doc.getElementsByTagName("application");
+			final NodeList appList = doc.getElementsByTagName("application");
 			taskLookUpTable = new double[appList.getLength()][13];
 			taskNames = new String[appList.getLength()];
 			for (int i = 0; i < appList.getLength(); i++) {
-				Node appNode = appList.item(i);
+				final Node appNode = appList.item(i);
 	
-				Element appElement = (Element) appNode;
+				final Element appElement = (Element) appNode;
 				isAttribtuePresent(appElement, "name");
 				isElementPresent(appElement, "usage_percentage");
 				isElementPresent(appElement, "prob_cloud_selection");
@@ -541,22 +549,22 @@ public class SimSettings {
 				isElementPresent(appElement, "vm_utilization_on_mobile");
 				isElementPresent(appElement, "delay_sensitivity");
 
-				String taskName = appElement.getAttribute("name");
+				final String taskName = appElement.getAttribute("name");
 				taskNames[i] = taskName;
 				
-				double usage_percentage = Double.parseDouble(appElement.getElementsByTagName("usage_percentage").item(0).getTextContent());
-				double prob_cloud_selection = Double.parseDouble(appElement.getElementsByTagName("prob_cloud_selection").item(0).getTextContent());
-				double poisson_interarrival = Double.parseDouble(appElement.getElementsByTagName("poisson_interarrival").item(0).getTextContent());
-				double active_period = Double.parseDouble(appElement.getElementsByTagName("active_period").item(0).getTextContent());
-				double idle_period = Double.parseDouble(appElement.getElementsByTagName("idle_period").item(0).getTextContent());
-				double data_upload = Double.parseDouble(appElement.getElementsByTagName("data_upload").item(0).getTextContent());
-				double data_download = Double.parseDouble(appElement.getElementsByTagName("data_download").item(0).getTextContent());
-				double task_length = Double.parseDouble(appElement.getElementsByTagName("task_length").item(0).getTextContent());
-				double required_core = Double.parseDouble(appElement.getElementsByTagName("required_core").item(0).getTextContent());
-				double vm_utilization_on_edge = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_edge").item(0).getTextContent());
-				double vm_utilization_on_cloud = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_cloud").item(0).getTextContent());
-				double vm_utilization_on_mobile = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_mobile").item(0).getTextContent());
-				double delay_sensitivity = Double.parseDouble(appElement.getElementsByTagName("delay_sensitivity").item(0).getTextContent());
+				final double usage_percentage = Double.parseDouble(appElement.getElementsByTagName("usage_percentage").item(0).getTextContent());
+				final double prob_cloud_selection = Double.parseDouble(appElement.getElementsByTagName("prob_cloud_selection").item(0).getTextContent());
+				final double poisson_interarrival = Double.parseDouble(appElement.getElementsByTagName("poisson_interarrival").item(0).getTextContent());
+				final double active_period = Double.parseDouble(appElement.getElementsByTagName("active_period").item(0).getTextContent());
+				final double idle_period = Double.parseDouble(appElement.getElementsByTagName("idle_period").item(0).getTextContent());
+				final double data_upload = Double.parseDouble(appElement.getElementsByTagName("data_upload").item(0).getTextContent());
+				final double data_download = Double.parseDouble(appElement.getElementsByTagName("data_download").item(0).getTextContent());
+				final double task_length = Double.parseDouble(appElement.getElementsByTagName("task_length").item(0).getTextContent());
+				final double required_core = Double.parseDouble(appElement.getElementsByTagName("required_core").item(0).getTextContent());
+				final double vm_utilization_on_edge = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_edge").item(0).getTextContent());
+				final double vm_utilization_on_cloud = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_cloud").item(0).getTextContent());
+				final double vm_utilization_on_mobile = Double.parseDouble(appElement.getElementsByTagName("vm_utilization_on_mobile").item(0).getTextContent());
+				final double delay_sensitivity = Double.parseDouble(appElement.getElementsByTagName("delay_sensitivity").item(0).getTextContent());
 				
 			    taskLookUpTable[i][0] = usage_percentage; //usage percentage [0-100]
 			    taskLookUpTable[i][1] = prob_cloud_selection; //prob. of selecting cloud [0-100]
@@ -573,28 +581,28 @@ public class SimSettings {
 			    taskLookUpTable[i][12] = delay_sensitivity; //delay_sensitivity [0-1]
 			}
 	
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			SimLogger.printLine("Edge Devices XML cannot be parsed! Terminating simulation...");
 			e.printStackTrace();
 			System.exit(0);
 		}
 	}
 
-	private void parseEdgeDevicesXML(String filePath)
+	private void parseEdgeDevicesXML(final String filePath)
 	{
 		try {	
-			File devicesFile = new File(filePath);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			final File devicesFile = new File(filePath);
+			final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			edgeDevicesDoc = dBuilder.parse(devicesFile);
 			edgeDevicesDoc.getDocumentElement().normalize();
 
-			NodeList datacenterList = edgeDevicesDoc.getElementsByTagName("datacenter");
+			final NodeList datacenterList = edgeDevicesDoc.getElementsByTagName("datacenter");
 			for (int i = 0; i < datacenterList.getLength(); i++) {
 			    NUM_OF_EDGE_DATACENTERS++;
-				Node datacenterNode = datacenterList.item(i);
+				final Node datacenterNode = datacenterList.item(i);
 	
-				Element datacenterElement = (Element) datacenterNode;
+				final Element datacenterElement = (Element) datacenterNode;
 				isAttribtuePresent(datacenterElement, "arch");
 				isAttribtuePresent(datacenterElement, "os");
 				isAttribtuePresent(datacenterElement, "vmm");
@@ -603,34 +611,34 @@ public class SimSettings {
 				isElementPresent(datacenterElement, "costPerMem");
 				isElementPresent(datacenterElement, "costPerStorage");
 
-				Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
+				final Element location = (Element)datacenterElement.getElementsByTagName("location").item(0);
 				isElementPresent(location, "attractiveness");
 				isElementPresent(location, "wlan_id");
 				isElementPresent(location, "x_pos");
 				isElementPresent(location, "y_pos");
 				
-				String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
-				int placeTypeIndex = Integer.parseInt(attractiveness);
+				final String attractiveness = location.getElementsByTagName("attractiveness").item(0).getTextContent();
+				final int placeTypeIndex = Integer.parseInt(attractiveness);
 				if(NUM_OF_PLACE_TYPES < placeTypeIndex+1)
 					NUM_OF_PLACE_TYPES = placeTypeIndex+1;
 
-				NodeList hostList = datacenterElement.getElementsByTagName("host");
+				final NodeList hostList = datacenterElement.getElementsByTagName("host");
 				for (int j = 0; j < hostList.getLength(); j++) {
 				    NUM_OF_EDGE_HOSTS++;
-					Node hostNode = hostList.item(j);
+					final Node hostNode = hostList.item(j);
 					
-					Element hostElement = (Element) hostNode;
+					final Element hostElement = (Element) hostNode;
 					isElementPresent(hostElement, "core");
 					isElementPresent(hostElement, "mips");
 					isElementPresent(hostElement, "ram");
 					isElementPresent(hostElement, "storage");
 
-					NodeList vmList = hostElement.getElementsByTagName("VM");
+					final NodeList vmList = hostElement.getElementsByTagName("VM");
 					for (int k = 0; k < vmList.getLength(); k++) {
 					    NUM_OF_EDGE_VMS++;
-						Node vmNode = vmList.item(k);
+						final Node vmNode = vmList.item(k);
 						
-						Element vmElement = (Element) vmNode;
+						final Element vmElement = (Element) vmNode;
 						isAttribtuePresent(vmElement, "vmm");
 						isElementPresent(vmElement, "core");
 						isElementPresent(vmElement, "mips");
@@ -640,8 +648,48 @@ public class SimSettings {
 				}
 			}
 	
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			SimLogger.printLine("Edge Devices XML cannot be parsed! Terminating simulation...");
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
+
+	private void parseMobileDevicesXML(final String filePath)
+	{
+		try {	
+			final File devicesFile = new File(filePath);
+			final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			mobileDevicesDoc = dBuilder.parse(devicesFile);
+			mobileDevicesDoc.getDocumentElement().normalize();
+
+			final NodeList clientlist = mobileDevicesDoc.getElementsByTagName("Client");
+			for (int i = 0; i < clientlist.getLength(); i++) {
+				final Node client = clientlist.item(i);
+	
+				final Element clientElement = (Element) client;
+
+				final NodeList timeList = clientElement.getElementsByTagName("Time");
+				for (int j = 0; j < timeList.getLength(); j++) {
+					final Node timeNode = timeList.item(j);
+					
+					final Element timeElement = (Element) timeNode;
+					isElementPresent(timeElement, "time");
+
+					final NodeList location = timeElement.getElementsByTagName("Location");
+					for (int k = 0; k < location.getLength(); k++) {
+						final Node locNode = location.item(k);
+						
+						final Element locElement = (Element) locNode;
+						isElementPresent(locElement, "X_Pos");
+						isElementPresent(locElement, "Y_Pos");
+					}
+				}
+			}
+	
+		} catch (final Exception e) {
+			SimLogger.printLine("Mobile Devices XML cannot be parsed! Terminating simulation...");
 			e.printStackTrace();
 			System.exit(0);
 		}
