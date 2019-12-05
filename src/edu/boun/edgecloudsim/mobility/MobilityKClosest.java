@@ -69,7 +69,7 @@ public class MobilityKClosest extends MobilityModel {
 		PriorityQueue<EdgeCenterDistance> pQueue = new PriorityQueue<EdgeCenterDistance>(new CompareDistances()); 
 		// Trace closest edge datacenter
 		int closestDatacenterIndex = Integer.MAX_VALUE;
-		int distToClosestDatacenter = Integer.MAX_VALUE;
+		//int distToClosestDatacenter = Integer.MAX_VALUE;
 		int numberOfDatacenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
 		int[] distances = new int[connectedMobileDevices.length];
 		for (int j = 0; j < numberOfDatacenters; j++) {
@@ -88,14 +88,15 @@ public class MobilityKClosest extends MobilityModel {
 				distToClosestDatacenter = distToDatacenter;
 			}*/
 		}
-		
+		int numMobile = Integer.MAX_VALUE;
 		for(int i=0; i<k ;i++) {
 			EdgeCenterDistance ed = pQueue.poll();
-			if(ed.distance < distToClosestDatacenter) {
-				distToClosestDatacenter = ed.distance;
-				closestDatacenterIndex = ed.centerId;	
+			if(connectedMobileDevices[ed.centerId] < numMobile) {
+				closestDatacenterIndex = ed.centerId;
+				numMobile = connectedMobileDevices[ed.centerId];
 			}
 		}
+		connectedMobileDevices[closestDatacenterIndex]++;
 
 		return closestDatacenterIndex;
 	}
