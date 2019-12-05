@@ -21,6 +21,7 @@ import edu.boun.edgecloudsim.edge_server.DefaultEdgeServerManager;
 import edu.boun.edgecloudsim.edge_server.EdgeServerManager;
 import edu.boun.edgecloudsim.mobility.MobilityModel;
 import edu.boun.edgecloudsim.mobility.MobilityCrawdad;
+import edu.boun.edgecloudsim.mobility.MobilityKClosest;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.task_generator.IdleActiveLoadGenerator;
 import edu.boun.edgecloudsim.task_generator.LoadGeneratorModel;
@@ -53,7 +54,7 @@ public class SampleScenarioFactory implements ScenarioFactory {
 
 	@Override
 	public MobilityModel getMobilityModel() {
-		return new MobilityCrawdad(numOfMobileDevice,simulationTime);
+		return new MobilityKClosest(numOfMobileDevice,simulationTime);
 	}
 
 	@Override
