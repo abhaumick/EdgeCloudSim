@@ -205,7 +205,7 @@ public class SimSettings {
 		System.out.println("Jai mata di");
 		parseApplicatinosXML(applicationsFile);
 		parseEdgeDevicesXML(edgeDevicesFile);
-		parseMobileDevicesXML(mobileDevicesFile);
+		parseMobileDevicesTimeXML(mobileDevicesFile);
 		System.out.println("Let's rock!");
 		return result;
 	}
@@ -647,7 +647,7 @@ public class SimSettings {
 			mobileDevicesDoc.getDocumentElement().normalize();
 
 			final NodeList clientlist = mobileDevicesDoc.getElementsByTagName("Client");
-			int check = 0;
+			//int check = 0;
 			for (int i = 0; i < clientlist.getLength(); i++) {
 				final Node client = clientlist.item(i);
 
@@ -667,13 +667,48 @@ public class SimSettings {
 						final Element locElement = (Element) locNode;
 						isElementPresent(locElement, "X_Pos");
 						isElementPresent(locElement, "Y_Pos");
-						System.out.println(check++);
+						//System.out.println(check++);
 					}
 				}
 			}
 
 		} catch (final Exception e) {
 			SimLogger.printLine("Mobile Devices XML cannot be parsed! Terminating simulation...");
+			e.printStackTrace();
+			System.exit(0);
+		}
+	}
+	
+	private void parseMobileDevicesTimeXML(final String filePath) {
+		try {
+			final File devicesFile = new File(filePath);
+			final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			final DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			mobileDevicesDoc = dBuilder.parse(devicesFile);
+			mobileDevicesDoc.getDocumentElement().normalize();
+
+			final NodeList timeList = mobileDevicesDoc.getElementsByTagName("Time");
+			//int check = 0;
+			//int time=0;
+			for (int i = 0; i < timeList.getLength(); i++) {
+				//System.out.println(time++);
+				final Node client = timeList.item(i);
+				final Element clientElement = (Element) client;
+				isElementPresent(clientElement, "time");
+				final NodeList clientList = clientElement.getElementsByTagName("Client");
+				for (int j = 0; j < clientList.getLength(); j++) {
+						final Node locNode = clientList.item(j);
+
+						final Element locElement = (Element) locNode;
+						isElementPresent(locElement, "Node");
+						isElementPresent(locElement, "X_Pos");
+						isElementPresent(locElement, "Y_Pos");
+						//System.out.println(check++);
+					}
+				}
+
+		} catch (final Exception e) {
+			SimLogger.printLine("Mobile Devices by Time XML cannot be parsed! Terminating simulation...");
 			e.printStackTrace();
 			System.exit(0);
 		}

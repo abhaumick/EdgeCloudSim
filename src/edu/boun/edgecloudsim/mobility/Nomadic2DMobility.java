@@ -151,26 +151,6 @@ public class Nomadic2DMobility extends MobilityModel {
 				mobileTreeMapArray.get(i).put(treeMap.lastKey() + waitingTime,
 						new Location(placeTypeIndex, wlan_id, x_pos, y_pos));
 
-				/*
-				 * while (placeFound == false) { int newDatacenterId =
-				 * SimUtils.getRandomNumber(0,
-				 * SimSettings.getInstance().getNumOfEdgeDatacenters() - 1); if (newDatacenterId
-				 * != currentLocationId) { placeFound = true; Node datacenterNode =
-				 * datacenterList.item(newDatacenterId); Element datacenterElement = (Element)
-				 * datacenterNode; Element location = (Element)
-				 * datacenterElement.getElementsByTagName("location").item(0); String
-				 * attractiveness = location.getElementsByTagName("attractiveness").item(0)
-				 * .getTextContent(); int placeTypeIndex = Integer.parseInt(attractiveness); int
-				 * wlan_id = Integer
-				 * .parseInt(location.getElementsByTagName("wlan_id").item(0).getTextContent());
-				 * int x_pos = Integer.parseInt(location.getElementsByTagName("x_pos").item(0).
-				 * getTextContent()); int y_pos =
-				 * Integer.parseInt(location.getElementsByTagName("y_pos").item(0).
-				 * getTextContent());
-				 * 
-				 * treeMap.put(treeMap.lastKey() + waitingTime, new Location(placeTypeIndex,
-				 * wlan_id, x_pos, y_pos)); } }
-				 */
 				}
 		}
 

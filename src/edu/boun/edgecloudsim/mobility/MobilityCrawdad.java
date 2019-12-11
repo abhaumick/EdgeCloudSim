@@ -33,9 +33,8 @@ import edu.boun.edgecloudsim.utils.SimUtils;
 
 public class MobilityCrawdad extends MobilityModel {
 	private List<TreeMap<Double, Location>> treeMapArray;
-
-	private int maxX = 50;
-	private int maxY = 50;
+	private int maxX = 450;
+	private int maxY = 370;
 
 	public MobilityCrawdad(int _numberOfMobileDevices, double _simulationTime) {
 		super(_numberOfMobileDevices, _simulationTime);
