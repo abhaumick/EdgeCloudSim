@@ -80,13 +80,9 @@ public class MobilityKClosest extends MobilityModel {
 			int y_pos = Integer.parseInt(location.getElementsByTagName("y_pos").item(0).getTextContent());
 			// Find pythagorean distance from datacenter
 			int distToDatacenter = (int) Math.sqrt(Math.pow((x_pos2 - x_pos), 2) + Math.pow((y_pos2 - y_pos), 2));
-
+			
 			EdgeCenterDistance edgeCenterDistance = new EdgeCenterDistance(j, distToDatacenter);
 			pQueue.add(edgeCenterDistance);
-			/*if (distToDatacenter < distToClosestDatacenter) {
-				closestDatacenterIndex = j;
-				distToClosestDatacenter = distToDatacenter;
-			}*/
 		}
 		int numMobile = Integer.MAX_VALUE;
 		if(lastDataCenter != -1) {
@@ -94,6 +90,7 @@ public class MobilityKClosest extends MobilityModel {
 		}
 		for(int i=0; i<k ;i++) {
 			EdgeCenterDistance ed = pQueue.poll();
+			//System.out.print(connectedMobileDevices[ed.centerId] + " datacenter-"+ed.centerId+ "  ");
 			if(connectedMobileDevices[ed.centerId] < numMobile) {
 				closestDatacenterIndex = ed.centerId;
 				numMobile = connectedMobileDevices[ed.centerId];
@@ -136,7 +133,7 @@ public class MobilityKClosest extends MobilityModel {
             Element Time = (Element) clientNode;
             double time = Double.parseDouble(Time.getElementsByTagName("time").item(0).getTextContent());
             for(int l=0; l < clientList.getLength(); l++){
-                Element client = (Element) Time.getElementsByTagName("Client").item(0);
+                Element client = (Element) Time.getElementsByTagName("Client").item(l);
                 int node = Integer.parseInt(client.getElementsByTagName("Node").item(0).getTextContent());
                 Double X_pos = Double.parseDouble(client.getElementsByTagName("X_Pos").item(0).getTextContent());
                 Double Y_pos = Double.parseDouble(client.getElementsByTagName("Y_Pos").item(0).getTextContent());
@@ -173,4 +170,6 @@ public class MobilityKClosest extends MobilityModel {
 
 		return e.getValue();
 	}
+
+	
 }
