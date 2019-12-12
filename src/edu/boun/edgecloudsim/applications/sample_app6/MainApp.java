@@ -54,7 +54,7 @@ public class MainApp {
 			configFile = "scripts/sample_app5/config/default_config.properties";
 			applicationsFile = "scripts/sample_app6/config/applications.xml";
 			edgeDevicesFile = "scripts/sample_app6/config/edge_devices.xml";
-			mobileDevicesFile = "scripts/sample_app6/config/mobile_devices_new100.xml";
+			mobileDevicesFile = "scripts/sample_app6/config/mobile_devices_new1.xml";
 			outputFolder = "sim_results/ite" + iterationNumber;
 		}
 

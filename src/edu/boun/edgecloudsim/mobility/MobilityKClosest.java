@@ -7,7 +7,7 @@
  * continuous location update.
  * 
  * Licence:      GPL - http://www.gnu.org/copyleft/gpl.html
- * Copyright (c) 2017, Bogazici University, Istanbul, Turkey
+ * Copyright (c) 2017, Bogazici University, IsStanbul, Turkey
  */
 
 package edu.boun.edgecloudsim.mobility;
@@ -170,7 +170,12 @@ public class MobilityKClosest extends MobilityModel {
 	@Override
 	public Location getLocation(int deviceId, double time) {
 		TreeMap<Double, Location> treeMap = treeMapArray.get(deviceId);
-		System.out.println(treeMap.lastKey());
+		if(treeMap == null) {
+			SimLogger.printLine(
+					"Impossible has occured! no location is found for the device '" + deviceId + "' at " + time);
+			return null;
+		}
+		//System.out.println(treeMap.lastKey());
 		Entry<Double, Location> e = treeMap.floorEntry(time);
 
 		if (e == null) {
