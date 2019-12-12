@@ -35,8 +35,10 @@ public class Nomadic2DMobility extends MobilityModel {
 	private List<TreeMap<Double, Location>> treeMapArray;
 	private List<TreeMap<Double, Location>> mobileTreeMapArray;
 
-	private int maxX = 50;
-	private int maxY = 50;
+	private int minX = 550;
+	private int minY = 1450;
+	private int maxX = 1000;
+	private int maxY = 1820;
 
 	public Nomadic2DMobility(int _numberOfMobileDevices, double _simulationTime) {
 		super(_numberOfMobileDevices, _simulationTime);
@@ -133,8 +135,8 @@ public class Nomadic2DMobility extends MobilityModel {
 				/*int randX = SimUtils.getRandomNumber(0, maxX - 1);
 				int randY = SimUtils.getRandomNumber(0, maxY - 1);*/
 				
-				int randX = rand.nextInt(maxX);
-				int randY = rand.nextInt(maxY);
+				int randX = minX + rand.nextInt(maxX-minX+1);	//	Zero inclusive, bound exclusive
+				int randY = minY + rand.nextInt(maxY-minY+1);
 
 				int closestDatacenterIndex = getClosestDatacenter(randX, randY);
 
@@ -190,4 +192,21 @@ public class Nomadic2DMobility extends MobilityModel {
 
 		return e.getValue();
 	}
+
+	@Override
+	public Location getMobileLocation(int deviceId, double time) {
+		TreeMap<Double, Location> mobileTreeMap = mobileTreeMapArray.get(deviceId);
+
+		Entry<Double, Location> e = mobileTreeMap.floorEntry(time);
+
+		if (e == null) {
+			SimLogger.printLine(
+					"impossible is occured! no location is found for the device '" + deviceId + "' at " + time);
+			System.exit(0);
+		}
+
+		return e.getValue();
+	}
+
+
 }

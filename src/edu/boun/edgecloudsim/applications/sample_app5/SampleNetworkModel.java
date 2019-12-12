@@ -17,14 +17,13 @@
 
 package edu.boun.edgecloudsim.applications.sample_app5;
 
-import org.cloudbus.cloudsim.core.CloudSim;
-
 import edu.boun.edgecloudsim.core.SimManager;
 import edu.boun.edgecloudsim.core.SimSettings;
 import edu.boun.edgecloudsim.edge_client.Task;
 import edu.boun.edgecloudsim.network.NetworkModel;
 import edu.boun.edgecloudsim.utils.Location;
 import edu.boun.edgecloudsim.utils.SimLogger;
+import org.cloudbus.cloudsim.core.CloudSim;
 
 public class SampleNetworkModel extends NetworkModel {
 	public static enum NETWORK_TYPE {WLAN, LAN};
@@ -234,6 +233,8 @@ public class SampleNetworkModel extends NetworkModel {
 		}
 		
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(sourceDeviceId,CloudSim.clock());
+		Location mobileDeviceLocation = SimManager.getInstance().getMobilityModel().getMobileLocation(sourceDeviceId,
+				CloudSim.clock());
 
 		//mobile device to cloud server
 		if(destDeviceId == SimSettings.CLOUD_DATACENTER_ID){
@@ -241,7 +242,7 @@ public class SampleNetworkModel extends NetworkModel {
 		}
 		//mobile device to edge device (wifi access point)
 		else if (destDeviceId == SimSettings.GENERIC_EDGE_DEVICE_ID) {
-			delay = getWlanUploadDelay(accessPointLocation, task.getCloudletFileSize());
+			delay = getWlanUploadDelay(accessPointLocation, mobileDeviceLocation, task.getCloudletFileSize());
 		}
 		
 		return delay;
@@ -260,14 +261,16 @@ public class SampleNetworkModel extends NetworkModel {
 		}
 		
 		Location accessPointLocation = SimManager.getInstance().getMobilityModel().getLocation(destDeviceId,CloudSim.clock());
-		
+		Location mobileDeviceLocation = SimManager.getInstance().getMobilityModel().getMobileLocation(destDeviceId,
+				CloudSim.clock());
+
 		//cloud server to mobile device
 		if(sourceDeviceId == SimSettings.CLOUD_DATACENTER_ID){
 			delay = getWanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
 		}
 		//edge device (wifi access point) to mobile device
 		else{
-			delay = getWlanDownloadDelay(accessPointLocation, task.getCloudletOutputSize());
+			delay = getWlanDownloadDelay(accessPointLocation, mobileDeviceLocation, task.getCloudletOutputSize());
 		}
 		
 		return delay;
@@ -329,21 +332,32 @@ public class SampleNetworkModel extends NetworkModel {
 		}
 	}
 
-	private double getWlanDownloadDelay(Location accessPointLocation, double dataSize) {
+	private double getWlanDownloadDelay(Location accessPointLocation, Location mobileDeviceLocation, double dataSize) {
 		int numOfWlanUser = wlanClients[accessPointLocation.getServingWlanId()];
 		double taskSizeInKb = dataSize * (double)8; //KB to Kb
+		double nodeLimitedBW=0;
+		double distLimitedBW=0;
+		double distanceToAccessPoint=0;
 		double result=0;
 		
-		if(numOfWlanUser < experimentalWlanDelay.length)
+		if(numOfWlanUser < experimentalWlanDelay.length) {
+			nodeLimitedBW = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3) /*Kbps*/; //802.11ac is around 3 times faster than 802.11
+
+			distanceToAccessPoint = Math.sqrt(Math.pow((accessPointLocation.getXPos() - mobileDeviceLocation.getXPos()), 2) +
+					Math.pow((accessPointLocation.getYPos() - mobileDeviceLocation.getYPos()), 2));
+
+			distLimitedBW = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3);
 			result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
+		}
+
 
 		//System.out.println("--> " + numOfWlanUser + " user, " + taskSizeInKb + " KB, " +result + " sec");
 		return result;
 	}
 	
 	//wlan upload and download delay is symmetric in this model
-	private double getWlanUploadDelay(Location accessPointLocation, double dataSize) {
-		return getWlanDownloadDelay(accessPointLocation, dataSize);
+	private double getWlanUploadDelay(Location accessPointLocation, Location mobileDeviceLocation, double dataSize) {
+		return getWlanDownloadDelay(accessPointLocation, mobileDeviceLocation, dataSize);
 	}
 	
 	private double getWanDownloadDelay(Location accessPointLocation, double dataSize) {
@@ -360,7 +374,7 @@ public class SampleNetworkModel extends NetworkModel {
 	}
 	
 	//wan upload and download delay is symmetric in this model
-	private double getWanUploadDelay(Location accessPointLocation, double dataSize) {
+	private double getWanUploadDelay(Location accessPointLocation,  double dataSize) {
 		return getWanDownloadDelay(accessPointLocation, dataSize);
 	}
 	

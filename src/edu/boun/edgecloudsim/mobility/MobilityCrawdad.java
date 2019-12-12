@@ -139,4 +139,22 @@ public class MobilityCrawdad extends MobilityModel {
 
 		return e.getValue();
 	}
+
+	@Override
+	public Location getMobileLocation(int deviceId, double time) {
+		TreeMap<Double, Location> treeMap = treeMapArray.get(deviceId);
+
+		Entry<Double, Location> e = treeMap.floorEntry(time);
+
+		if (e == null) {
+			SimLogger.printLine(
+					"impossible is occured! no location is found for the device '" + deviceId + "' at " + time);
+			System.exit(0);
+		}
+
+		return e.getValue();
+	}	
+
+
+
 }
