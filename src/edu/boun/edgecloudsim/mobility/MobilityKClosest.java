@@ -132,7 +132,8 @@ public class MobilityKClosest extends MobilityModel {
 			Element clientElement = (Element) clientNode;
             NodeList clientList = clientElement.getElementsByTagName("Client");
             Element Time = (Element) clientNode;
-            double time = Double.parseDouble(Time.getElementsByTagName("time").item(0).getTextContent());
+			double time = Double.parseDouble(Time.getElementsByTagName("time").item(0).getTextContent());
+			
             for(int l=0; l < clientList.getLength(); l++){
                 Element client = (Element) Time.getElementsByTagName("Client").item(l);
                 int node = Integer.parseInt(client.getElementsByTagName("Node").item(0).getTextContent());
