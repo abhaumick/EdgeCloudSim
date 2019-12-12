@@ -47,7 +47,7 @@ public class SampleNetworkModel extends NetworkModel {
 	private double totalManTaskOutputSize;
 	private double numOfManTaskForDownload;
 	private double numOfManTaskForUpload;
-	
+
 	public static final double[] experimentalWlanDelay = {
 		/*1 Client*/ 88040.279 /*(Kbps)*/,
 		/*2 Clients*/ 45150.982 /*(Kbps)*/,
@@ -151,7 +151,13 @@ public class SampleNetworkModel extends NetworkModel {
 		/*99 Clients*/ 1504.844 /*(Kbps)*/,
 		/*100 Clients*/ 1500.631 /*(Kbps)*/
 	};
-	
+
+	private double wlanRange=1000;
+	private double maxWlanBandwidth=experimentalWlanDelay[1];
+	private double minWlanBandwidth=experimentalWlanDelay[100];
+	private double distanceFitFactor=(minWlanBandwidth*wlanRange*wlanRange)/maxWlanBandwidth;
+
+
 	public static final double[] experimentalWanDelay = {
 		/*1 Client*/ 20703.973 /*(Kbps)*/,
 		/*2 Clients*/ 12023.957 /*(Kbps)*/,
@@ -218,6 +224,8 @@ public class SampleNetworkModel extends NetworkModel {
 		numOfManTaskForDownload = 0;
 		totalManTaskInputSize = 0;
 		numOfManTaskForUpload = 0;
+
+		System.out.println("Distance Fit Factor = " + distanceFitFactor);
 	}
 
     /**
@@ -345,9 +353,17 @@ public class SampleNetworkModel extends NetworkModel {
 
 			distanceToAccessPoint = Math.sqrt(Math.pow((accessPointLocation.getXPos() - mobileDeviceLocation.getXPos()), 2) +
 					Math.pow((accessPointLocation.getYPos() - mobileDeviceLocation.getYPos()), 2));
+			if (distanceToAccessPoint < 1.0)
+				distLimitedBW = taskSizeInKb /*Kb*/ / (maxWlanBandwidth * (double) 3);	//	Max Bandwidth
+			else if (distanceToAccessPoint > wlanRange)
+				distLimitedBW = 0;
+			else
+				distLimitedBW = taskSizeInKb /*Kb*/ / (maxWlanBandwidth * (double) 3/(distLimitedBW*distLimitedBW) * distanceFitFactor);
 
-			distLimitedBW = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3);
-			result = taskSizeInKb /*Kb*/ / (experimentalWlanDelay[numOfWlanUser] * (double) 3 ) /*Kbps*/; //802.11ac is around 3 times faster than 802.11n
+			if (distLimitedBW > nodeLimitedBW)
+				result = nodeLimitedBW;
+			else
+				result = distLimitedBW;
 		}
 
 

@@ -205,7 +205,7 @@ public class SimSettings {
 		System.out.println("Jai mata di");
 		parseApplicatinosXML(applicationsFile);
 		parseEdgeDevicesXML(edgeDevicesFile);
-		parseMobileDevicesXML(mobileDevicesFile);
+		//	parseMobileDevicesXML(mobileDevicesFile);
 		System.out.println("Let's rock!");
 		return result;
 	}
