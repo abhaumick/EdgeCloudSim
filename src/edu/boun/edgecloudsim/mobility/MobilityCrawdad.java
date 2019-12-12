@@ -92,7 +92,6 @@ public class MobilityCrawdad extends MobilityModel {
 		Document clientdoc = SimSettings.getInstance().getMobileDevicesDocument();
 		mobiledevicesList = clientdoc.getElementsByTagName("Time");
 		for (int i = 0; i < mobiledevicesList.getLength(); i++) {
-			treeMapArray.add(i, new TreeMap<Double, Location>());
 			
 			Node clientNode = mobiledevicesList.item(i);
 			Element clientElement = (Element) clientNode;
@@ -105,6 +104,10 @@ public class MobilityCrawdad extends MobilityModel {
                 if(node > numberOfMobileDevices) {
                 	break;
                 }
+                if(treeMapArray.get(node)==null) {
+                	treeMapArray.add(node, new TreeMap<Double, Location>());
+                }
+    			treeMapArray.add(node, new TreeMap<Double, Location>());
                 Double X_pos = Double.parseDouble(client.getElementsByTagName("X_Pos").item(0).getTextContent());
                 Double Y_pos = Double.parseDouble(client.getElementsByTagName("Y_Pos").item(0).getTextContent());
                 int closestDatacenterIndex = getClosestDatacenter(X_pos, Y_pos);
@@ -119,6 +122,8 @@ public class MobilityCrawdad extends MobilityModel {
 				int y_pos = Integer.parseInt(location_d.getElementsByTagName("y_pos").item(0).getTextContent());
 				TreeMap<Double, Location> treeMap = treeMapArray.get(i);
 				treeMap.put(time, new Location(0, wlan_id, x_pos, y_pos));
+				treeMapArray.get(node).put(time,
+						new Location(0, wlan_id, x_pos, y_pos));
             }
 		}
 	}

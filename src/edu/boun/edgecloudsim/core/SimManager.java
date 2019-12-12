@@ -120,8 +120,8 @@ public class SimManager extends SimEntity {
 		
 		//Start Mobile Datacenters & Generate VMs
 		mobileServerManager.startDatacenters();
-		mobileServerManager.createVmList(mobileDeviceManager.getId());
 		
+		mobileServerManager.createVmList(mobileDeviceManager.getId());
 		CloudSim.startSimulation();
 	}
 

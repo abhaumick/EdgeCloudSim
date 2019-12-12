@@ -104,6 +104,9 @@ public class MobilityKClosest extends MobilityModel {
 	@Override
 	public void initialize() {
 		treeMapArray = new ArrayList<TreeMap<Double, Location>>();
+		for(int i=0; i<numberOfMobileDevices; i++) {
+			treeMapArray.add(null);
+		}
 		mobileTreeMap = new HashMap<Integer, Integer>();
 		int lengthDataCenters = SimSettings.getInstance().getNumOfEdgeDatacenters();
 		ExponentialDistribution[] expRngList = new ExponentialDistribution[lengthDataCenters];
@@ -125,8 +128,6 @@ public class MobilityKClosest extends MobilityModel {
         Document clientdoc = SimSettings.getInstance().getMobileDevicesDocument();
 		mobiledevicesList = clientdoc.getElementsByTagName("Time");
 		for (int i = 0; i < mobiledevicesList.getLength(); i++) {
-			treeMapArray.add(i, new TreeMap<Double, Location>());
-			
 			Node clientNode = mobiledevicesList.item(i);
 			Element clientElement = (Element) clientNode;
             NodeList clientList = clientElement.getElementsByTagName("Client");
@@ -138,12 +139,15 @@ public class MobilityKClosest extends MobilityModel {
                 if(node > numberOfMobileDevices) {
                 	break;
                 }
+                if(treeMapArray.get(node)==null) {
+                	treeMapArray.add(node, new TreeMap<Double, Location>());
+                }
                 Double X_pos = Double.parseDouble(client.getElementsByTagName("X_Pos").item(0).getTextContent());
                 Double Y_pos = Double.parseDouble(client.getElementsByTagName("Y_Pos").item(0).getTextContent());
                 int lastDataCenter = mobileTreeMap.getOrDefault(node, -1);
          
                 int closestDatacenterIndex = getCloseBestDatacenter(X_pos, Y_pos, lastDataCenter);
-                System.out.println(closestDatacenterIndex);
+                //System.out.println(closestDatacenterIndex);
         		mobileTreeMap.put(node, closestDatacenterIndex);
 				Node datacenterNode = datacenterList.item(closestDatacenterIndex);
 				Element datacenterElement = (Element) datacenterNode;
@@ -153,16 +157,19 @@ public class MobilityKClosest extends MobilityModel {
 				int wlan_id = Integer.parseInt(location_d.getElementsByTagName("wlan_id").item(0).getTextContent());
 				int x_pos = Integer.parseInt(location_d.getElementsByTagName("x_pos").item(0).getTextContent());
 				int y_pos = Integer.parseInt(location_d.getElementsByTagName("y_pos").item(0).getTextContent());
-				TreeMap<Double, Location> treeMap = treeMapArray.get(i);
-				treeMap.put(time, new Location(0, wlan_id, x_pos, y_pos));
+				//TreeMap<Double, Location> treeMap = treeMapArray.get(i);
+				//treeMap.put(time, new Location(0, wlan_id, x_pos, y_pos));
+				treeMapArray.get(node).put(time,
+						new Location(0, wlan_id, x_pos, y_pos));
             }
 		}
+		System.out.println(treeMapArray.size()+"  hi");
 	}
 
 	@Override
 	public Location getLocation(int deviceId, double time) {
 		TreeMap<Double, Location> treeMap = treeMapArray.get(deviceId);
-
+		System.out.println(treeMap.lastKey());
 		Entry<Double, Location> e = treeMap.floorEntry(time);
 
 		if (e == null) {
