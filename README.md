@@ -19,4 +19,4 @@ To change to closest Selection policy make the following changes :
         line 57:  change MobilityKclosest to MobilityCrawdad
 
 
-For further doubts contact a.bhaumich@gmail, kgoel62@gmail.com
+For further doubts contact a.bhaumick@gmail.com, kgoel62@gmail.com
